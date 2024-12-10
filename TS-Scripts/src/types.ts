@@ -1,4 +1,6 @@
 
+import { PrintConfig } from "./gcodePrintConfig";
+
 export interface Rectangle {
   x: number;
   y: number;
@@ -99,92 +101,133 @@ class PrintHeadDimension {
 }
 
 export class PrintersParams extends BaseParams {
-  plate_xmin: number;
-  plate_xmax: number;
-  plate_ymin: number;
-  plate_ymax: number;
-  head_xmin: number;
-  head_xmax: number;
-  head_ymin: number;
-  head_ymax: number;
-  x0: number;
-  y0: number;
-  headDimensions: { [key: number]: PrintHeadDimension };
+  extruderConfig: PrintConfig['extruderConfig'];
+  heatbedConfig: PrintConfig['heatbedConfig'];
+  cncConfig: PrintConfig['CNCConfig'];
 
-  constructor(
-    plate_xmin: number,
-    plate_xmax: number,
-    plate_ymin: number,
-    plate_ymax: number,
-    head_xmin: number,
-    head_xmax: number,
-    head_ymin: number,
-    head_ymax: number,
-    x0: number,
-    y0: number,
-    headDimensions: { [key: number]: PrintHeadDimension },
-  ) {
+  constructor(printerConfig: PrintConfig) {
     super();
-    this.plate_xmin = plate_xmin;
-    this.plate_xmax = plate_xmax;
-    this.plate_ymin = plate_ymin;
-    this.plate_ymax = plate_ymax;
-    this.head_xmin = head_xmin;
-    this.head_xmax = head_xmax;
-    this.head_ymin = head_ymin;
-    this.head_ymax = head_ymax;
-    this.x0 = x0;
-    this.y0 = y0;
-    this.headDimensions = headDimensions;
+
+    // Directly assign the printerConfig values to the corresponding properties
+    this.extruderConfig = printerConfig.extruderConfig;
+    this.heatbedConfig = printerConfig.heatbedConfig;
+    this.cncConfig = printerConfig.CNCConfig;
+
   }
 
-  // Calculates the offset needed to transition from G53 (machine coordinate system) to G54 (bed-centered coordinate system)
+  //Log Parameters
+  //console.log(`Extruder 1 Head Dimensions: ${this.extruderConfig.extruder1.headDimensions}`);
+  // Calculates the offset needed to transition from (bed coordinate system with 0,0 in bottom left) to G53 (absolute coordinate system)
   get g53ToG54(): [number, number] {
-    return [this.x0 - this.plateWidth / 2, this.y0 - this.plateHeight / 2]; //TODO: check if this is correctly taking the offsets from the heatbed config
+    return [
+      this.heatbedConfig.travelCenter_X,
+      this.heatbedConfig.travelCenter_Y,
+    ];
+  }
+
+  get bedCoordinatesToG53(): [number, number] {
+    return [this.heatbedConfig.travelMin_X, this.heatbedConfig.travelMin_Y];
+  }
+
+  getBedCoordinatesToG53(): [number, number] {
+    /*
+    // Map input strings to extruder keys
+    const extruderKeyMap: { [key: string]: string } = {
+      extruder1: 'extruderA',
+      extruder2: 'extruderB',
+    };
+
+    // Get the corresponding key for the provided extruder string
+    const extruderKey = extruderKeyMap[extruder];
+    if (!extruderKey) {
+      throw new Error(
+        `Invalid extruder input: '${extruder}'. Use 'extruder1' or 'extruder2'.`,
+      );
+    }
+
+    // Access the extruder offsets
+    const extruderOffset = this.extruderOffsets[extruderKey];
+
+    if (!extruderOffset) {
+      throw new Error(`Extruder '${extruderKey}' not found in extruderOffsets`);
+    }
+
+    // Round the centerOffset values to 2 decimal places
+    const roundedXOffset = parseFloat(extruderOffset.centerOffset_X.toFixed(2));
+    const roundedYOffset = parseFloat(extruderOffset.centerOffset_Y.toFixed(2));
+    */
+    // Calculate and return the transformed coordinates
+    return [this.heatbedConfig.travelMin_X, this.heatbedConfig.travelMin_Y];
   }
 
   get plateWidth(): number {
-    return this.plate_xmax - this.plate_xmin;
+    return this.heatbedConfig.travelMax_X - this.heatbedConfig.travelMin_X;
   }
 
   get plateHeight(): number {
-    return this.plate_ymax - this.plate_ymin;
-  }
-
-  get headWidth(): number {
-    return this.head_xmax - this.head_xmin;
-  }
-
-  get headHeight(): number {
-    return this.head_ymax - this.head_ymin;
+    return this.heatbedConfig.travelMax_Y - this.heatbedConfig.travelMax_Y;
   }
 
   get headCenterG53(): [number, number] {
-    return [this.x0, this.y0];
+    return [
+      this.heatbedConfig.travelCenter_X,
+      this.heatbedConfig.travelCenter_Y,
+    ];
   }
 
   // Function to get the head dimension based on part height
   getHeadDimensionForHeight(
     partHeight: number,
+    extruder: string,
   ): PrintHeadDimension | undefined {
-    // Get the list of available heights from the headDimensions keys
-    const availableHeights = Object.keys(this.headDimensions).map(Number);
+    let availableHeights: number[];
+
+    // Determine which extruder's head dimensions to use
+    if (extruder === 'extruder1') {
+      availableHeights = Object.keys(
+        this.extruderConfig.extruder1.headDimensions,
+      ).map(Number);
+    } else if (extruder === 'extruder2') {
+      availableHeights = Object.keys(
+        this.extruderConfig.extruder2.headDimensions,
+      ).map(Number);
+    } else {
+      throw new Error(
+        `Invalid extruder input: '${extruder}'. Use 'extruder1' or 'extruder2'.`,
+      );
+    }
 
     // Find the smallest height that is greater than or equal to partHeight
-    const selectedHeight = Math.min(
-      ...availableHeights.filter((height) => height >= partHeight),
+    const validHeights = availableHeights.filter(
+      (height) => height >= partHeight,
     );
 
-    // Return the corresponding PrintHeadDimension
-    return this.headDimensions[selectedHeight];
+    // If no valid height found, return undefined
+    if (validHeights.length === 0) {
+      return undefined;
+    }
+
+    // Select the smallest height
+    const selectedHeight = Math.min(...validHeights);
+
+    // Return the corresponding PrintHeadDimension for the selected height
+    if (extruder === 'extruder1') {
+      return this.extruderConfig.extruder1.headDimensions[selectedHeight];
+    } else if (extruder === 'extruder2') {
+      return this.extruderConfig.extruder2.headDimensions[selectedHeight];
+    }
+
+    // Default return for safety, although this shouldn't happen
+    return undefined;
   }
 
   // Function to get head width and height for a given part height
   getHeadWidthAndHeightForHeight(
     partHeight: number,
+    extruder: string,
   ): { headWidth: number; headHeight: number } | undefined {
     // First, get the head dimensions using the getHeadDimensionForHeight method
-    const Dimension = this.getHeadDimensionForHeight(partHeight);
+    const Dimension = this.getHeadDimensionForHeight(partHeight, extruder);
 
     if (!Dimension) {
       // If it's undefined, return undefined

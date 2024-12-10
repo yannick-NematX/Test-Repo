@@ -1,18 +1,36 @@
 {
-    "plate_xmin": -175,
-    "plate_xmax": 180,
-    "plate_ymin": -90,
-    "plate_ymax": 90,
-    "head_xmin": 0,
-    "head_xmax": 50,
-    "head_ymin": 0,
-    "head_ymax": 50,
-    "x0": 100,
-    "y0": 100,
-    "headDimensions": {
-      "1.5": { "minX": 0, "maxX": 3, "minY": -3, "maxY": 0 },
-      "4": { "minX": 0, "maxX": 5, "minY": -5, "maxY": 0 },
-      "100": { "minX": 0, "maxX": 65, "minY": -40, "maxY": 0 }
+  "extruderConfig": {
+    "extruder1": {
+      "centerOffset_X": 10.5,
+      "centerOffset_Y": 12.3,
+      "headDimensions": {
+        "20": { "minX": 0, "maxX": 50, "minY": 0, "maxY": 60 },
+        "50": { "minX": 5, "maxX": 55, "minY": 10, "maxY": 70 },
+        "100": { "minX": 10, "maxX": 60, "minY": 15, "maxY": 80 }
+      }
+    },
+    "extruder2": {
+      "centerOffset_X": -15.0,
+      "centerOffset_Y": 5.0,
+      "headDimensions": {
+        "1.5": { "minX": 0, "maxX": 3, "minY": -3, "maxY": 0 },
+        "4": { "minX": 0, "maxX": 5, "minY": -5, "maxY": 0 },
+        "100": { "minX": 0, "maxX": 65, "minY": -40, "maxY": 0 }
+      }
     }
+  },
+  "heatbedConfig": {
+    "travelMax_X":355,
+    "travelMin_X": 0,
+    "travelMax_Y": 180,
+    "travelMin_Y": 0,
+    "travelCenter_X": 200,
+    "travelCenter_Y": 100,
+    "travelMax_Z": 100
+  },
+  "CNCConfig": {
+    "travelX": 400,
+    "travelY": 200,
+    "travelZ": 110
   }
-  
+}

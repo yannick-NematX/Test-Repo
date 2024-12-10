@@ -10,13 +10,18 @@ function testPrinterParams() {
     const printerConfigPath = path.join(__dirname, "config", "printerConfig.json");
     const printerDict = JSON.parse(fs.readFileSync(printerConfigPath, "utf-8"));
 
+    //console.log(printerDict);
+
+    // Read selected extruder
+    const selectedExtruder = ['extruder1',''];
+
     // Initialize PrinterParams with data from the JSON file
     const printerParams = new PrintersParams(printerDict);
 
     // Test partHeight
     const partHeight = 3; // Example part height
-    const headDimension = printerParams.getHeadDimensionForHeight(partHeight);
-    const headSize = printerParams.getHeadWidthAndHeightForHeight(partHeight);
+    const headDimension = printerParams.getHeadDimensionForHeight(partHeight, selectedExtruder[0]);
+    const headSize = printerParams.getHeadWidthAndHeightForHeight(partHeight, selectedExtruder[0]);
 
     // Log the results
     if (headDimension) {
