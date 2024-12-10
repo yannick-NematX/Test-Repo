@@ -43,55 +43,38 @@ export class RectangleConfiguration {
     }
   
     // Private helper method to calculate the arrangement
-    private _getOptimalConfig(): Rectangle[] {
+    private _getOptimalConfig() {
       const ow = this.outer.w; // Outer rectangle width
       const oh = this.outer.h; // Outer rectangle height
       const iw = this.inner.w; // Inner rectangle width
       const ih = this.inner.h; // Inner rectangle height
-      const recArray: Rectangle[] = []; // Array to store the positioned inner rectangles
+      const recArray = []; // Array to store the positioned inner rectangles
   
       // Edge case: Check if the inner rectangle can fit at least once
       if (iw > ow || ih > oh) {
-        
-        return [];
-        console.log("Inner rectangle does not fit");
+        return []; // If the inner rectangle is larger than the outer, return an empty array
       }
-  
       // Initialize position variables
-      let posX = ow; // Start placing from the rightmost position
-      let posY = 0; // Start placing from the bottommost position
-  
+      let posX = ow - iw / 2; // Start placing from the rightmost position$
+      let posY = ih / 2; // Start placing from the bottommost position
       // Loop to place rectangles row by row
-      while (posY + ih <= oh) { // Continue until there's no more vertical space
-        while (posX + iw <= ow) { // Continue until there's no more horizontal space
+      while (posY + ih <= oh) {
+        // Continue until there's no more vertical space
+        while (posX - iw / 2 >= 0) {
+          // Continue until there's no more horizontal space
           // Add the current rectangle to the array
-          const rec: Rectangle = { x: posX, y: posY, w: iw, h: ih };
+          const rec = { x: posX, y: posY, w: iw, h: ih };
           recArray.push(rec);
-          console.log(`Position X: ${posX}`);
           // Move to the next position horizontally
           posX -= iw + this.dxMin;
         }
-  
         // Reset horizontal position and move down a row
-        posX = ow;
+        posX = ow - iw / 2;
         posY += ih + this.dyMin;
       }
-  
       return recArray; // Return the array of arranged rectangles
     }
     getOptimalRectangleCount(): number {
         return this.getOptimalConfig().length; // Simply return the count of rectangles
       }
   }
-
-
-const outerRect: Rectangle = { x: 0, y: 0, w: 355, h: 160 };
-const innerRect: Rectangle = { x: 0, y: 0, w: 80, h: 40 };
-const dxMin = 10;
-const dyMin = 5;
-
-const config = new RectangleConfiguration(outerRect, innerRect, dxMin, dyMin);
-const arrangedRectangles = config.getOptimalConfig();
-
-console.log(`Number of rectangles: ${arrangedRectangles.length}`);
-console.log(arrangedRectangles);
