@@ -1,0 +1,21 @@
+{
+  "name": "ts-scripts",
+  "version": "1.0.0",
+  "main": "index.js",
+"scripts": {
+  "build": "tsc",
+  "start": "node runTests.js",
+  "dev": "npx ts-node runTests.ts"
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/node": "^22.9.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}
