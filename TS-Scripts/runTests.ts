@@ -2,7 +2,9 @@ import fs from "fs";
 import path from "path";
 import { Bounds, PrintersParams} from './src/types';
 import { RectangleConfiguration, Rectangle } from "./src/testRectangleConfig";
-import { RectangleArranger, LayoutConfig } from "./src/rectangleArranger";
+import { RectangleArranger, LayoutConfig, DirectionX, DirectionY } from "./src/rectangleArranger";
+import { PythonShell, Options } from 'python-shell';
+import { json } from "stream/consumers";
 
 function testPrinterParams() {
     console.log("------ Test: PrinterParams (Running) ----- ");
@@ -58,34 +60,42 @@ function testRectangleArranger() {
 const layoutConfig: LayoutConfig = {
     containerWidth: 500,
     containerHeight: 500,
-    directionX: "left-to-right", // Can be "right-to-left"
-    directionY: "top-to-bottom", // Can be "bottom-to-top"
+    directionX: DirectionX.RightToLeft, // Can be "right-to-left"
+    directionY: DirectionY.BottomToTop, // Can be "bottom-to-top"
     headDimension: {
-      minX: 10,  // Horizontal spacing before each rectangle
-      maxX: 10,  // Horizontal spacing after each rectangle
-      minY: 10,  // Vertical spacing before each rectangle
-      maxY: 10,  // Vertical spacing after each rectangle
+      minX: 0,  // Horizontal spacing before each rectangle
+      maxX: 0,  // Horizontal spacing after each rectangle
+      minY: 0,  // Vertical spacing before each rectangle
+      maxY: 0,  // Vertical spacing after each rectangle
       rangeHeight: 10, // Spacing between rows
     },
   };
   
   const arranger = new RectangleArranger(layoutConfig);
-  const n = 5;  // Number of rectangles
-  const rectangleWidth = 100;
+  const n = 4;  // Number of rectangles
+  const rectangleWidth = 50;
   const rectangleHeight = 50;
-  
+  const { totalWidth, totalHeight} = arranger.calculateTotalDimensions(n, rectangleWidth, rectangleHeight);
+  console.log(`Packed Rectangles Dimension:${totalWidth} x ${totalHeight} `)
   const arrangedRectangles = arranger.arrangeEqualRectangles(n, rectangleWidth, rectangleHeight);
   
   // Output arranged rectangles
   console.log("Arranged Rectangles:");
   console.table(arrangedRectangles);
+
+  // Options to send data as JSON to the Python script
+    let options: Options = {
+    mode: 'json',// use JSON mode
+    pythonPath: '', // Path to Python executable
+    scriptPath: './src/', // Path to the Python script
+    args: [JSON.stringify(arrangedRectangles), JSON.stringify([totalWidth,totalHeight]), 
+    JSON.stringify([layoutConfig.containerWidth,layoutConfig.containerHeight])], // Pass the data as a JSON string
+  };
   
-  // Output the packed container dimensions
-  const totalWidth = 4 * rectangleWidth + 3 * layoutConfig.headDimension.minX;
-  const totalHeight = 3 * rectangleHeight + 2 * layoutConfig.headDimension.minY;
-  console.log(`Total Packed Width: ${totalWidth}`);
-  console.log(`Total Packed Height: ${totalHeight}`);
-  
+// Explicitly define types for callback parameters
+PythonShell.run('plotRectangles.py', options).then(messages=>{
+    console.log('Python Script Finished');
+  });
 }
 
 // Main execution
