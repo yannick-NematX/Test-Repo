@@ -42,6 +42,17 @@ export class RectangleArranger {
     this.head = config.headDimension;
   }
 
+  arrangeAndCenterRectangles(n: number, width: number, height: number): Rectangle[] {
+    let rectangles: Rectangle[] = [];
+    //Step 1: arrange rectangles
+    rectangles = this.arrangeEqualRectangles(n,width,height);
+
+    //Step 2: shift rectangles to center of container
+    rectangles = this.shiftRectanglesToCenter(rectangles, this.containerWidth, this.containerHeight)
+
+    return rectangles
+  }
+
   arrangeEqualRectangles(n: number, width: number, height: number): Rectangle[] {
     const rows = Math.floor(Math.sqrt(n));
     const columns = Math.ceil(n / rows);
@@ -59,8 +70,10 @@ export class RectangleArranger {
     const rectangles: Rectangle[] = [];
     let rectCount = 0;
 
-    let currentX = this.getStartX(totalWidth);
-    let currentY = this.getStartY(totalHeight);
+    let startX = this.getStartX(totalWidth,width);
+    let startY = this.getStartY(totalHeight,height);
+
+    console.log(`Start Coordinates: (${startX},${startY})`);
     let rowHeight = 0;
 
     // Loop to place rectangles in the container
@@ -69,8 +82,8 @@ export class RectangleArranger {
         if (rectCount >= n) break;
 
         // Place rectangle based on current position and direction
-        const x = currentX + col * (width + dX);
-        const y = currentY + row * (height + dY);
+        const x = this.getXPos(startX,col,width,dX) 
+        const y = this.getYPos(startY,row,height,dY)
 
         rectangles.push({ x, y, w, h });
         rectCount++;
@@ -80,25 +93,85 @@ export class RectangleArranger {
       }
 
       // Move to the next row
-      currentY = this.nextRowY(currentY, rowHeight);
-      currentX = this.getStartX(totalWidth); // Reset to the starting X position for the next row
+      //currentY = this.nextRowY(currentY, rowHeight);
+      //currentX = this.getStartX(totalWidth,width); // Reset to the starting X position for the next row
     }
 
     return rectangles;
   }
 
-  private getStartX(width: number): number {
+  calculateGridCenter(rectangles: Rectangle[]) {
+    if (!rectangles || rectangles.length === 0) {
+        throw new Error("The list of rectangles is empty");
+    }
+
+    // Initialize bounds for the grid
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    // Iterate through rectangles to calculate the bounds
+    rectangles.forEach(rect => {
+        const topLeftX = rect.x;
+        const topLeftY = rect.y;
+        const bottomRightX = rect.x + rect.w;
+        const bottomRightY = rect.y - rect.h;
+
+        // Update bounds
+        minX = Math.min(minX, topLeftX);
+        maxX = Math.max(maxX, bottomRightX);
+        minY = Math.min(minY, bottomRightY);
+        maxY = Math.max(maxY, topLeftY);
+    });
+
+    // Calculate the center of the grid
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+
+    return { centerX, centerY };
+  }
+
+  shiftRectanglesToCenter(rectangles: Rectangle[], width: number, height:number) {
+    if (!rectangles || rectangles.length === 0) {
+        throw new Error("The list of rectangles is empty");
+    }
+
+    // Step 1: Calculate the current center of the grid
+    const gridCenter = this.calculateGridCenter(rectangles);
+
+    // Step 2: Calculate the center of the target rectangle
+    const targetCenterX = width / 2;
+    const targetCenterY = height / 2;
+
+    // Step 3: Calculate the offset needed to shift the grid center to the target center
+    const offsetX = targetCenterX - gridCenter.centerX;
+    const offsetY = targetCenterY - gridCenter.centerY;
+
+    // Step 4: Apply the offset to each rectangle
+    const shiftedRectangles = rectangles.map(rect => ({
+        x: rect.x + offsetX,
+        y: rect.y + offsetY,
+        w: rect.w,
+        h: rect.h
+    }));
+
+    return shiftedRectangles;
+}
+
+
+  private getStartX(packWidth: number,rectWidth:number): number {
     if (this.directionX === DirectionX.RightToLeft) {
-      return width;  // Start from the right if right-to-left
+      return packWidth-rectWidth;  // Start from the right if right-to-left
     }
     return 0;  // Start from the left if left-to-right
   }
 
-  private getStartY(height: number): number {
+  private getStartY(packHeight: number, rectHeight:number): number {
     if (this.directionY === DirectionY.BottomToTop) {
-      return 0;  // Start from the bottom if bottom-to-top
+      return rectHeight;  // Start from the bottom if bottom-to-top
     }
-    return height;  // Start from the top if top-to-bottom
+    return packHeight;  // Start from the top if top-to-bottom
   }
 
   private nextRowY(currentY: number, rowHeight: number): number {
@@ -106,6 +179,22 @@ export class RectangleArranger {
       return currentY + rowHeight;
     }
     return currentY - rowHeight;
+  }
+
+  private getXPos(currentXPos: number, currentCol:number, width: number, dX: number){
+    if (this.directionX===DirectionX.LeftToRight) {
+      return currentXPos + currentCol*(width + dX) 
+    } else {
+      return currentXPos - currentCol*(width + dX)
+    }
+  }
+
+  private getYPos(currentYPos: number, currentRow:number, height: number, dY: number){
+    if (this.directionY===DirectionY.BottomToTop) {
+      return currentYPos + currentRow*(height + dY) 
+    } else {
+      return currentYPos - currentRow*(height + dY)
+    }
   }
 
   // Private method to get the horizontal spacing based on directionX

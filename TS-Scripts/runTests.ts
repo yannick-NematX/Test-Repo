@@ -63,21 +63,21 @@ const layoutConfig: LayoutConfig = {
     directionX: DirectionX.RightToLeft, // Can be "right-to-left"
     directionY: DirectionY.BottomToTop, // Can be "bottom-to-top"
     headDimension: {
-      minX: 0,  // Horizontal spacing before each rectangle
-      maxX: 0,  // Horizontal spacing after each rectangle
-      minY: 0,  // Vertical spacing before each rectangle
-      maxY: 0,  // Vertical spacing after each rectangle
+      minX: 10,  // Horizontal spacing before each rectangle
+      maxX: 10,  // Horizontal spacing after each rectangle
+      minY: 10,  // Vertical spacing before each rectangle
+      maxY: 10,  // Vertical spacing after each rectangle
       rangeHeight: 10, // Spacing between rows
     },
   };
   
   const arranger = new RectangleArranger(layoutConfig);
-  const n = 4;  // Number of rectangles
+  const n = 20;  // Number of rectangles
   const rectangleWidth = 50;
-  const rectangleHeight = 50;
+  const rectangleHeight = 80;
   const { totalWidth, totalHeight} = arranger.calculateTotalDimensions(n, rectangleWidth, rectangleHeight);
   console.log(`Packed Rectangles Dimension:${totalWidth} x ${totalHeight} `)
-  const arrangedRectangles = arranger.arrangeEqualRectangles(n, rectangleWidth, rectangleHeight);
+  const arrangedRectangles = arranger.arrangeAndCenterRectangles(n, rectangleWidth, rectangleHeight);
   
   // Output arranged rectangles
   console.log("Arranged Rectangles:");
@@ -101,8 +101,8 @@ PythonShell.run('plotRectangles.py', options).then(messages=>{
 // Main execution
 console.log("Starting tests...");
 try {
-    testPrinterParams();
-    testRectangleConfiguration();
+   // testPrinterParams();
+    //testRectangleConfiguration();
     testRectangleArranger();
 } catch (error) {
     console.error("An error occurred during testing:", error);

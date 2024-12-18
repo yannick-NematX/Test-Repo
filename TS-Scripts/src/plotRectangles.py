@@ -15,8 +15,14 @@ fig, ax = plt.subplots(figsize=(8, 6))
 
 # Add rectangles to the plot
 for rect in rectangles:
-    ax.add_patch(patches.Rectangle((rect['x'], rect['y']), rect['w'], rect['h'], 
+  # Adjust the y-coordinate for top-left corner input
+    ax.add_patch(patches.Rectangle((rect['x'], rect['y'] - rect['h']), rect['w'], rect['h'], 
                                    edgecolor='blue', facecolor='lightblue', linewidth=2))
+    # Plot the bottom-left corner as a red dot
+    plt.plot(rect['x'], rect['y'], 'ro')  # 'ro' = red circl
+
+     # Add label for the top-left corner
+    plt.text(rect['x'], rect['y'], f"({rect['x']}, {rect['y']})", color='red', fontsize=8, ha='right')
 
 # Set plot limits
 ax.set_xlim(0, containerRectDim[0])
