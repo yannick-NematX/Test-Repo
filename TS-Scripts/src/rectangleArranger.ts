@@ -64,7 +64,7 @@ export class RectangleArranger {
     const { totalWidth, totalHeight } = this.calculateTotalDimensions(n, width, height);
 
     if (totalWidth > this.containerWidth || totalHeight > this.containerHeight) {
-      console.error('Rectangles do not fit in the container');
+      throw new Error('Rectangles do not fit in the container');
     }
 
     const rectangles: Rectangle[] = [];
@@ -93,8 +93,6 @@ export class RectangleArranger {
       }
 
       // Move to the next row
-      //currentY = this.nextRowY(currentY, rowHeight);
-      //currentX = this.getStartX(totalWidth,width); // Reset to the starting X position for the next row
     }
 
     return rectangles;
@@ -172,13 +170,6 @@ export class RectangleArranger {
       return rectHeight;  // Start from the bottom if bottom-to-top
     }
     return packHeight;  // Start from the top if top-to-bottom
-  }
-
-  private nextRowY(currentY: number, rowHeight: number): number {
-    if (this.directionY === DirectionY.BottomToTop) {
-      return currentY + rowHeight;
-    }
-    return currentY - rowHeight;
   }
 
   private getXPos(currentXPos: number, currentCol:number, width: number, dX: number){

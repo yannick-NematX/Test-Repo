@@ -61,7 +61,7 @@ const layoutConfig: LayoutConfig = {
     containerWidth: 500,
     containerHeight: 500,
     directionX: DirectionX.RightToLeft, // Can be "right-to-left"
-    directionY: DirectionY.BottomToTop, // Can be "bottom-to-top"
+    directionY: DirectionY.TopToBottom, // Can be "bottom-to-top"
     headDimension: {
       minX: 10,  // Horizontal spacing before each rectangle
       maxX: 10,  // Horizontal spacing after each rectangle
@@ -72,7 +72,7 @@ const layoutConfig: LayoutConfig = {
   };
   
   const arranger = new RectangleArranger(layoutConfig);
-  const n = 20;  // Number of rectangles
+  const n = 100;  // Number of rectangles
   const rectangleWidth = 50;
   const rectangleHeight = 80;
   const { totalWidth, totalHeight} = arranger.calculateTotalDimensions(n, rectangleWidth, rectangleHeight);
