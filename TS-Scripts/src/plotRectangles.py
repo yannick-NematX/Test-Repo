@@ -8,7 +8,7 @@ import json
 data = json.loads(sys.argv[1])  # The first argument passed
 packerRectDim = json.loads(sys.argv[2])
 containerRectDim = json.loads(sys.argv[3])
-
+centers = json.load(sys.argv[4])
 rectangles = data
 
 # Create a plot

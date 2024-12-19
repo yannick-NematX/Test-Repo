@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { Bounds, PrintersParams} from './src/types';
 import { RectangleConfiguration, Rectangle } from "./src/testRectangleConfig";
-import { RectangleArranger, LayoutConfig, DirectionX, DirectionY } from "./src/rectangleArranger";
+import { RectangleArranger, LayoutConfig, DirectionX, DirectionY, Centers } from "./src/rectangleArranger";
 import { PythonShell, Options } from 'python-shell';
 import { json } from "stream/consumers";
 
@@ -58,10 +58,10 @@ function testRectangleConfiguration() {
 function testRectangleArranger() {
 
 const layoutConfig: LayoutConfig = {
-    containerWidth: 500,
-    containerHeight: 500,
+    containerWidth: 400,
+    containerHeight: 200,
     directionX: DirectionX.RightToLeft, // Can be "right-to-left"
-    directionY: DirectionY.TopToBottom, // Can be "bottom-to-top"
+    directionY: DirectionY.BottomToTop, // Can be "bottom-to-top"
     headDimension: {
       minX: 10,  // Horizontal spacing before each rectangle
       maxX: 10,  // Horizontal spacing after each rectangle
@@ -72,16 +72,21 @@ const layoutConfig: LayoutConfig = {
   };
   
   const arranger = new RectangleArranger(layoutConfig);
-  const n = 100;  // Number of rectangles
-  const rectangleWidth = 50;
-  const rectangleHeight = 80;
+  const n = 12;  // Number of rectangles
+  const rectangleWidth = 30;
+  const rectangleHeight = 50;
   const { totalWidth, totalHeight} = arranger.calculateTotalDimensions(n, rectangleWidth, rectangleHeight);
   console.log(`Packed Rectangles Dimension:${totalWidth} x ${totalHeight} `)
   const arrangedRectangles = arranger.arrangeAndCenterRectangles(n, rectangleWidth, rectangleHeight);
+
+  
+  const Centers : Centers =  arranger.getCentersOfRectangles(arrangedRectangles);
   
   // Output arranged rectangles
   console.log("Arranged Rectangles:");
   console.table(arrangedRectangles);
+  console.log ("Centers:");
+  console.table(Centers);
 
   // Options to send data as JSON to the Python script
     let options: Options = {
@@ -89,9 +94,8 @@ const layoutConfig: LayoutConfig = {
     pythonPath: '', // Path to Python executable
     scriptPath: './src/', // Path to the Python script
     args: [JSON.stringify(arrangedRectangles), JSON.stringify([totalWidth,totalHeight]), 
-    JSON.stringify([layoutConfig.containerWidth,layoutConfig.containerHeight])], // Pass the data as a JSON string
-  };
-  
+    JSON.stringify([layoutConfig.containerWidth,layoutConfig.containerHeight]) // Pass the data as a JSON string;
+    }
 // Explicitly define types for callback parameters
 PythonShell.run('plotRectangles.py', options).then(messages=>{
     console.log('Python Script Finished');

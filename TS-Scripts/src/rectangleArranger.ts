@@ -11,6 +11,13 @@ export enum DirectionY {
   BottomToTop = "bottom-to-top",
 }
 
+export type Center = {
+  x: number;
+  y: number;
+};
+
+export type Centers = Center[];
+
 type HeadDimension = { 
   minX: number;  // Horizontal spacing before a rectangle
   maxX: number;  // Horizontal spacing after a rectangle
@@ -155,6 +162,18 @@ export class RectangleArranger {
     }));
 
     return shiftedRectangles;
+}
+
+getCentersOfRectangles(rectangles: Rectangle[]): Centers {
+  if (rectangles.length === 0) {
+    throw new Error("The list of rectangles is empty.");
+  }
+
+  return rectangles.map((rect) => {
+    const x = rect.x + rect.w / 2; // Calculate center x-coordinate
+    const y = rect.y - rect.h / 2; // Calculate center y-coordinate
+    return { x, y };
+  });
 }
 
 
