@@ -24,10 +24,19 @@ export interface Temperature {
   heat_bed?: Record<string, number>;
 }
 
+export interface Point2D {
+  x: number;
+  y: number;
+}
+export interface Vector2D {
+  x: number;
+  y: number;
+}
+
 export interface Bounds {
-  x: Record<string, number>;
-  y: Record<string, number>;
-  z: Record<string, number>;
+  x: { min: number; max: number };
+  y: { min: number; max: number };
+  z?: { min: number; max: number };
 }
 
 export interface MetaData {
