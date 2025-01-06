@@ -59,7 +59,7 @@ function testRectangleArranger() {
 
 const layoutConfig: LayoutConfig = {
     centerRectangle: { x: 0, y: 0, w: 355, h: 180 },
-    boundingRectangle: { x: 200, y: 75, w: 100, h: 105 },
+    boundingRectangle: { x: 20, y: 0, w: 335, h: 180 },
     directionX: DirectionX.RightToLeft, // Can be "right-to-left"
     directionY: DirectionY.BottomToTop, // Can be "bottom-to-top"
     headDimension: {
@@ -72,7 +72,7 @@ const layoutConfig: LayoutConfig = {
   };
   
   const arranger = new RectangleArranger(layoutConfig);
-  const n = 4;  // Number of rectangles
+  const n = 8;  // Number of rectangles
   const rectangleWidth = 40;
   const rectangleHeight = 40;
   const { totalWidth, totalHeight} = arranger.calculateTotalDimensions(n, rectangleWidth, rectangleHeight);
@@ -82,13 +82,11 @@ const layoutConfig: LayoutConfig = {
   // Output arranged rectangles
   console.log("Arranged Rectangles:");
   console.table(arrangedRectangles);
-  console.log ("Centers:");
-  console.table(Centers);
 
   // Options to send data as JSON to the Python script
     let options: Options = {
     mode: 'json',// use JSON mode
-    pythonPath: '/usr/local/bin/python3', // Path to Python executable
+    pythonPath: '', // Path to Python executable
     scriptPath: './src/', // Path to the Python script
     args: [JSON.stringify(arrangedRectangles), JSON.stringify(layoutConfig.boundingRectangle), 
     JSON.stringify(layoutConfig.centerRectangle)], // Pass the data as a JSON string

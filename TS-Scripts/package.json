@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node runTests.js",
-    "dev": "npx ts-node runTests.ts"
+    "dev": "ts-node runTests.ts"
   },
   "keywords": [],
   "author": "",
