@@ -58,8 +58,8 @@ function testRectangleConfiguration() {
 function testRectangleArranger() {
 
 const layoutConfig: LayoutConfig = {
-    containerWidth: 400,
-    containerHeight: 200,
+    centerRectangle: { x: 0, y: 0, w: 355, h: 180 },
+    boundingRectangle: { x: 200, y: 75, w: 100, h: 105 },
     directionX: DirectionX.RightToLeft, // Can be "right-to-left"
     directionY: DirectionY.BottomToTop, // Can be "bottom-to-top"
     headDimension: {
@@ -72,15 +72,12 @@ const layoutConfig: LayoutConfig = {
   };
   
   const arranger = new RectangleArranger(layoutConfig);
-  const n = 12;  // Number of rectangles
-  const rectangleWidth = 30;
-  const rectangleHeight = 50;
+  const n = 4;  // Number of rectangles
+  const rectangleWidth = 40;
+  const rectangleHeight = 40;
   const { totalWidth, totalHeight} = arranger.calculateTotalDimensions(n, rectangleWidth, rectangleHeight);
   console.log(`Packed Rectangles Dimension:${totalWidth} x ${totalHeight} `)
-  const arrangedRectangles = arranger.arrangeAndCenterRectangles(n, rectangleWidth, rectangleHeight);
-
-  
-  const Centers : Centers =  arranger.getCentersOfRectangles(arrangedRectangles);
+  const arrangedRectangles = arranger.arrangeAndCenterRectanglesWithinBounds(n, rectangleWidth, rectangleHeight);
   
   // Output arranged rectangles
   console.log("Arranged Rectangles:");
@@ -91,23 +88,68 @@ const layoutConfig: LayoutConfig = {
   // Options to send data as JSON to the Python script
     let options: Options = {
     mode: 'json',// use JSON mode
-    pythonPath: '', // Path to Python executable
+    pythonPath: '/usr/local/bin/python3', // Path to Python executable
     scriptPath: './src/', // Path to the Python script
-    args: [JSON.stringify(arrangedRectangles), JSON.stringify([totalWidth,totalHeight]), 
-    JSON.stringify([layoutConfig.containerWidth,layoutConfig.containerHeight]) // Pass the data as a JSON string;
-    }
+    args: [JSON.stringify(arrangedRectangles), JSON.stringify(layoutConfig.boundingRectangle), 
+    JSON.stringify(layoutConfig.centerRectangle)], // Pass the data as a JSON string
+  };
+  
 // Explicitly define types for callback parameters
 PythonShell.run('plotRectangles.py', options).then(messages=>{
     console.log('Python Script Finished');
   });
 }
 
+function testRectangleOperations() {
+
+    function intersectionRectangles(
+      rect1: Rectangle,
+      rect2: Rectangle,
+    ): Rectangle | null {
+      // Calculate the edges of the intersection rectangle
+      const left = Math.max(rect1.x, rect2.x);
+      const bottom = Math.max(rect1.y, rect2.y);
+      const right = Math.min(rect1.x + rect1.w, rect2.x + rect2.w);
+      const top = Math.min(rect1.y + rect1.h, rect2.y + rect2.h);
+    
+      // Check if there is an actual intersection
+      if (left < right && top > bottom) {
+        // Calculate the intersection's width and height
+        const width = right - left;
+        const height = top - bottom;
+    
+        return {
+          x: left,
+          y: bottom,
+          w: width,
+          h: height,
+        };
+      } else {
+        // If no intersection, return null
+        return null;
+      }
+    }
+
+    console.log("------ Test: RectangleOperations (Running) ----- ");
+    // Test the RectangleOperations class
+    const rect1: Rectangle = { x: 0, y: 0, w: 355, h: 180 };
+    const rect2: Rectangle = { x: 0, y: 0, w: 80, h: 40 };
+
+    const intersectRect = intersectionRectangles(rect1,rect2)
+    console.log("------ Test: RectangleOperations (Results) ----- ");
+    console.log(`Intersection rectangle:`);
+    console.table(intersectRect);
+
+}
+
 // Main execution
 console.log("Starting tests...");
 try {
    // testPrinterParams();
+   testRectangleArranger();
     //testRectangleConfiguration();
-    testRectangleArranger();
+    //testRectangleArranger();
+    testRectangleOperations();
 } catch (error) {
     console.error("An error occurred during testing:", error);
 }
